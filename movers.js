@@ -72,84 +72,45 @@ const Movers = (function(anchorMixer){
 
 		//load in the required libraries 
 		
-
-		const dependencies = init();
-
-			//console.log(dependencies)
-
-		
-
-		
-	
 		/**
-		 * Uploads an image to specific server
-		 * @param {*} image_to_upload : the image to upload from source
-		 * @param {*} target_location _ the target server url location
+		 * Handles uploading images only
+		 * other kinds of files will not be uploaded
 		 */
-		async function uploadImage(image_to_upload, target_location){
-			await dependencies;
+		class UploadImage{
 
-			console.log(image_to_upload)
-
-			const form = new FormData()
-
-			form.append("file", image_to_upload)
-			
-			const xhr = new XMLHttpRequest
-
-			xhr.open("POST", target_location)
-
-			// xhr.onload = function(){
-			// 	//
-
-			// }
-
-			xhr.upload.addEventListener("progress", function(event){
-
-				console.log("Uploading: ", event);
+			/**
+			 * Starts the actual uploading process 
+			 * @param {*} image_to_upload 
+			 * @param {*} target_location 
+			 */
+			constructor(image_to_upload, target_location){
+				//do the actual uploading
+				console.log("Uploading: ", image_to_upload, " to ", target_location)
 
 
-				
-			})
+			}
 
+
+		}
+
+
+		/**
+		 * Handles only uploading of pdfs 
+		 */
+		class UploadPdf{
+
+		}
+
+
+		/**
+		 * Handles all kinds of files ..
+		 * 
+		 */
+		class UploadFile{
+
+		}
 
 		
-
-			xhr.send(form)
-
-		}
-
-
-		const uploadPdf = () => {
-			dependencies.then((dependencies) => {
-				console.log(dependencies)
-			})
-
-		}
-
-
-		const getUploadProgess = () => {
-
-		}
-
-
-		const getFileSize = () => {
-			dependencies.then((dependencies) => {
-				console.log(dependencies)
-			})
-
-		}
-
-
-
-		function init(){
-			const dependencies = anchorMixer.load_dependencies();
-
-			return dependencies;
-		 
-		}
-
-
 
 
 
@@ -158,10 +119,10 @@ const Movers = (function(anchorMixer){
 
 
 		return {
-			uploadImage: uploadImage,
-			uploadPdf: uploadPdf,
-			getUploadProgress: getUploadProgess,
-			getFileSize: getFileSize
+			uploadImage: (image_to_upload, target_location) => new UploadImage(image_to_upload, target_location),
+			// uploadPdf: uploadPdf,
+			// getUploadProgress: getUploadProgess,
+			// getFileSize: getFileSize
 		}
 
 
