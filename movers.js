@@ -99,11 +99,21 @@ const Movers = (function(anchorMixer){
 
 			xhr.open("POST", target_location)
 
-			xhr.onload = function(){
-				//
+			// xhr.onload = function(){
+			// 	//
 
-			}
+			// }
 
+			xhr.upload.addEventListener("progress", function(event){
+
+				console.log("Uploading: ", event);
+
+
+				
+			})
+
+
+		
 
 			xhr.send(form)
 
