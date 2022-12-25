@@ -69,6 +69,81 @@ function AnchorMixer(){
 }
 
 
+/**
+ * This is a Observer driven module system 
+ */
+const AnchorObserver = (function(){
+
+		const subjects = {};
+
+		//set the subscribers or observer's id
+		let observer_id = -1;
+
+
+		/**
+		 * Creates a subject and the object subscribed to it
+		 * @param {*} subject - the subject or event
+		 * @param {*} observer - the observer or subscribers to the subject or event
+		 */
+		function create_subject_and_subscribe(subject, observer){
+
+			if(!subjects[subject]){
+				subjects[subject] = [];
+			}
+
+			observer_id = observer_id + 1;
+
+			let token = observer_id.toString();
+
+			//prepare the observer/subscriber data
+			const subscriber_object = {
+				token: token,
+				observer: observer
+			}
+
+			subjects[subject].push(subscriber_object);
+
+			return token;
+
+
+		}
+
+
+		/**
+		 * Publishes on a particular subject. All the other observers subscribe can receive info
+		 * @param {*} subject - the current subject 
+		 * @param {*} data - the data the subject has to broadcast
+		 */
+		function subject_publishes(subject, data){
+
+			if(!subjects[subject]){
+				return false;
+			}
+
+			let subscribers = subjects[subject];
+
+			subscribers.forEach((subscriber) => {
+
+				subscriber.observer(data);
+
+			})
+			
+
+
+		}
+
+
+		return {
+			create_subject_and_subscribe: create_subject_and_subscribe,
+			subject_publishes: subject_publishes
+		}
+
+
+
+
+}());
+
+
 
 
 
@@ -77,7 +152,7 @@ function AnchorMixer(){
  * Movers relies on other third party libraries to work effectively 
  */
 
-const Movers = (function(anchorMixer){
+const Movers = (function(anchorMixer, anchorObserver){
 
 
 		let upload_progress = 0;
@@ -87,6 +162,7 @@ const Movers = (function(anchorMixer){
 		const getUploadProgress = function(){
 			return upload_progress;
 		}
+		
 		
 		
 		
@@ -124,6 +200,9 @@ const Movers = (function(anchorMixer){
 
 				xhr.upload.addEventListener("progress", async function(event){
 
+					//subscribe to the anchorObserver
+					anchorObserver.create_subject_and_subscribe("new-upload-progress", currentMoverObject.getUploadProgress);
+
 					currentMoverObject.checker = "working";
 
 					console.log("Jest: ", currentMoverObject.upload_key)
@@ -155,38 +234,29 @@ const Movers = (function(anchorMixer){
 					
 				
 					//calculate the progress
-
-					
-				
 					if(loaded < twentyfive_percent){
 						//this progress is less than 25%
-						currentMoverObject.uploadProgress = 25;
-
-						console.log("Current loader: ", loaded);
-
-						//save this to localforage
-						await localforage.setItem(`_movers_upload_${currentMoverObject.upload_key}`, currentMoverObject.uploadProgress);
+						currentMoverObject.uploadProgress = 25;					
+						anchorObserver.subject_publishes("new-upload-progress", currentMoverObject.uploadProgress);
+						
 				
 					}
 				
-					else if(loaded > twentyfive_percent && loaded < forty_percent){
+					if(loaded > twentyfive_percent && loaded < forty_percent){
 						currentMoverObject.uploadProgress = 30;
-
-						console.log("Current loader: ", loaded);
-						await localforage.setItem(`_movers_upload_${currentMoverObject.upload_key}`, currentMoverObject.uploadProgress);
+						anchorObserver.subject_publishes("new-upload-progress", currentMoverObject.uploadProgress);
 					}
 				
-					else if(loaded >= forty_percent && loaded <= fortyfive_percent){
-
-						console.log("Current loader: ", loaded);
+					if(loaded >= forty_percent && loaded <= fortyfive_percent){
 						currentMoverObject.uploadProgress = 43;
-						await localforage.setItem(`_movers_upload_${currentMoverObject.upload_key}`, currentMoverObject.uploadProgress);
+						
+						anchorObserver.subject_publishes("new-upload-progress", currentMoverObject.uploadProgress);
+
 					}
 				
-					else if(loaded == hundred_percent){
+					if(loaded == hundred_percent){
 						currentMoverObject.uploadProgress = 100;
-						console.log("Current loader: ", loaded);	
-						await localforage.setItem(`_movers_upload_${currentMoverObject.upload_key}`, currentMoverObject.uploadProgress);
+						anchorObserver.subject_publishes("new-upload-progress", currentMoverObject.uploadProgress);
 					}
 				
 				
@@ -207,17 +277,30 @@ const Movers = (function(anchorMixer){
 			}
 
 
-			async getUploadProgress(){
 
-				console.log(this.upload_key)
+			setUploadProgress(upload_progress){
 
-				//get the upload progress
-				let upload_progress = await localforage.getItem(`_movers_upload_${this.upload_key}`);
+				
 
-				console.log("Upload progress: ", upload_progress);
 
 			}
 
+
+			/**
+			 * Gets the upload progress of what is being uploaded 
+			 * contains a subscription to the upload progress ..	
+			 */
+			getUploadProgress(upload_progress){
+
+				if(typeof upload_progress != "undefined"){
+					console.log(upload_progress)
+
+					//Create a subscription service that listeners can subscribe to 
+					
+
+				}
+
+			}
 
 		}
 
@@ -249,11 +332,11 @@ const Movers = (function(anchorMixer){
 		return {
 			uploadImage: (image_to_upload, target_location) => new UploadImage(image_to_upload, target_location),
 			// uploadPdf: uploadPdf,
-			// getUploadProgress: getUploadProgess,
+			getUploadProgress: getUploadProgress,
 			// getFileSize: getFileSize
 		}
 
 
 
 
-}(new AnchorMixer));
+}(new AnchorMixer, AnchorObserver));

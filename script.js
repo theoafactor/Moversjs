@@ -1,4 +1,4 @@
-document.querySelector("#upload-form").addEventListener("submit", function(event){
+document.querySelector("#upload-form").addEventListener("submit", async function(event){
     event.preventDefault();
 
     // let form = new FormData();
@@ -9,10 +9,11 @@ document.querySelector("#upload-form").addEventListener("submit", function(event
     let image_to_upload = this.image.files[0];
 
     //upload the image
-    const mover = Movers.uploadImage(image_to_upload, "http://localhost/movers/index.php");
+    const mover = Movers.uploadImage(image_to_upload, "http://movers.com.test/index.php");
 
-    mover.getUploadProgress();
+    await mover.getUploadProgress();
 
+   
 
 })
 
